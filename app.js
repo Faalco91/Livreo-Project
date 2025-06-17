@@ -36,4 +36,55 @@ function renderBooks() {
   });
 }
 
+
+function openAddBookModal() {
+    const modal = document.getElementById("modal");
+    modal.innerHTML = `
+      <div class="modal-content">
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h2>Ajouter un livre</h2>
+        <form id="addBookForm">
+          <label>Titre <input name="title" required></label><br>
+          <label>Auteur <input name="author" required></label><br>
+          <label>Status
+            <select name="status">
+              <option value="to-read">À lire</option>
+              <option value="reading">En cours</option>
+              <option value="read">Lu</option>
+            </select>
+          </label><br>
+          <button type="submit">Ajouter</button>
+        </form>
+      </div>
+    `;
+    modal.classList.remove("hidden");
+  
+    document.getElementById("addBookForm").onsubmit = function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const book = {
+        isbn: "u" + Date.now(),
+        title: form.title.value,
+        author: form.author.value,
+        status: form.status.value
+      };
+      books.push(book);
+      saveBooks && saveBooks(); 
+      closeModal();
+      renderBooks();
+    };
+  }
+  
+  function closeModal() {
+    const modal = document.getElementById("modal");
+    modal.classList.add("hidden");
+    modal.innerHTML = "";
+  }
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("addBookBtn").onclick = openAddBookModal;
+  });
+
+  
+
 document.addEventListener("DOMContentLoaded", fetchBooks);
