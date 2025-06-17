@@ -78,5 +78,32 @@ body {
     margin-top: 1rem;
   }
 
+  /* Cartes de livres */
+.book-card {
+    background: #f7f9fa;
+    border-left: 6px solid #5bc0be;
+    border-radius: 12px;
+    padding: 1rem 1.3rem 0.9rem 1.1rem;
+    box-shadow: 0 1px 4px #0001;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: default;
+    position: relative;
+    transition: box-shadow 0.2s, border 0.2s;
+  }
+  
+  .book-card strong {
+    font-size: 1.08rem;
+    font-weight: bold;
+    color: #1d3244;
+  }
+  .book-card em {
+    font-size: 0.98rem;
+    color: #3aafa9;
+  }
+  
+
 
   
