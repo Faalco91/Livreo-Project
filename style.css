@@ -102,6 +102,7 @@ body {
     color: #3aafa9;
   }
 
+
   .detail-btn {
     background: #5bc0be;
     color: white;
@@ -115,6 +116,7 @@ body {
   .detail-btn:hover {
     background: #3aafa9;
   }
+
 
   .modal {
     position: fixed;
@@ -205,6 +207,7 @@ body {
     background: #3aafa9;
   }
   
+
   /* Styles pour la modale de détail du livre */
   .book-detail-modal {
     max-width: 500px;
@@ -320,4 +323,5 @@ body {
   .delete-btn:hover {
     background: #c0392b;
   }
+
   

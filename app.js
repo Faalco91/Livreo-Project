@@ -30,12 +30,15 @@ function renderBooks() {
           <strong>${book.title}</strong><br>
           <em>${book.author}</em>
         </div>
+        
         <button class="detail-btn" onclick="openBookDetailModal('${book.isbn}')">Voir détails</button>
+
       `;
       list.appendChild(div);
     });
   });
 }
+
 
 function openAddBookModal() {
     const modal = document.getElementById("modal");
@@ -46,7 +49,9 @@ function openAddBookModal() {
         <form id="addBookForm">
           <label>Titre <input name="title" required></label><br>
           <label>Auteur <input name="author" required></label><br>
+
           <label>Nombre de pages <input name="pages" type="number" min="1" placeholder="Ex: 300"></label><br>
+
           <label>Status
             <select name="status">
               <option value="to-read">À lire</option>
@@ -67,7 +72,9 @@ function openAddBookModal() {
         isbn: "u" + Date.now(),
         title: form.title.value,
         author: form.author.value,
+
         pages: form.pages.value ? parseInt(form.pages.value) : null,
+
         status: form.status.value
       };
       books.push(book);
@@ -86,6 +93,7 @@ function openAddBookModal() {
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("addBookBtn").onclick = openAddBookModal;
   });
+
 
 function openBookDetailModal(isbn) {
   const book = books.find(b => b.isbn === isbn);
@@ -196,3 +204,7 @@ function deleteBook(isbn) {
 }
 
 document.addEventListener("DOMContentLoaded", fetchBooks);
+
+
+document.addEventListener("DOMContentLoaded", fetchBooks);
+
