@@ -1,19 +1,52 @@
 let books = [];
 
+function showFeedback(message, type = 'info') {
+  const feedback = document.getElementById('feedback-message');
+  feedback.textContent = message;
+  feedback.className = `feedback-message feedback-${type}`;
+  feedback.classList.remove('hidden');
+  
+  // Masquer automatiquement après 3 secondes
+  setTimeout(() => {
+    feedback.classList.add('hidden');
+  }, 3000);
+}
+
+function showLoading(message = 'Chargement...') {
+  showFeedback(message, 'loading');
+}
+
+function showError(message) {
+  showFeedback(message, 'error');
+}
+
+function showSuccess(message) {
+  showFeedback(message, 'success');
+}
+
 function fetchBooks() {
+  showLoading('Chargement des livres...');
+  
   fetch('https://keligmartin.github.io/api/books.json')
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erreur réseau');
+      }
+      return response.json();
+    })
     .then(data => {
       books = data.map(book => ({
         ...book,
         status: 'to-read'
       }));
       renderBooks();
+      showSuccess(`${books.length} livres chargés avec succès !`);
     })
     .catch(error => {
       console.error('Erreur chargement de API livres', error);
       books = [];
       renderBooks();
+      showError('Erreur lors du chargement des livres. Veuillez réessayer.');
     });
 }
 
@@ -105,6 +138,7 @@ function openAddBookModal() {
       saveBooks && saveBooks(); 
       closeModal();
       renderBooks();
+      showSuccess(`"${book.title}" ajouté avec succès !`);
     };
   }
   
@@ -217,14 +251,19 @@ function saveBookChanges(isbn) {
   saveBooks && saveBooks();
   closeModal();
   renderBooks();
+  showSuccess(`Modifications de "${book.title}" sauvegardées !`);
 }
 
 function deleteBook(isbn) {
   if (confirm('Êtes-vous sûr de vouloir supprimer ce livre ?')) {
+    const book = books.find(b => b.isbn === isbn);
+    const bookTitle = book ? book.title : 'Ce livre';
+    
     books = books.filter(b => b.isbn !== isbn);
     saveBooks && saveBooks();
     closeModal();
     renderBooks();
+    showSuccess(`"${bookTitle}" supprimé avec succès !`);
   }
 }
 
@@ -309,6 +348,7 @@ function openColumnCustomizeModal(status) {
     closeModal();
     renderBooks();
     renderColumnHeaders();
+    showSuccess(`Colonne "${form.columnName.value}" personnalisée !`);
   };
 }
 
@@ -448,7 +488,9 @@ function showColumn(status) {
   localStorage.setItem('columnPrefs', JSON.stringify(prefs));
   
   renderColumnHeaders();
+  updateHiddenColumnsButton();
   closeModal();
+  showSuccess(`Colonne "${getColumnName(status)}" réaffichée !`);
   
   // Rouvrir la modale des colonnes masquées si il y en a encore
   setTimeout(() => {

@@ -508,3 +508,53 @@ body {
     background: #3aafa9;
   }
   
+  .feedback-message {
+    padding: 1rem 2rem;
+    margin: 0 3vw;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+    animation: slideDown 0.3s ease-out;
+    position: relative;
+    z-index: 10;
+  }
+
+  .feedback-message.hidden {
+    display: none;
+  }
+
+  .feedback-loading {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-left: 4px solid #2196f3;
+  }
+
+  .feedback-success {
+    background: #e8f5e8;
+    color: #2e7d32;
+    border-left: 4px solid #4caf50;
+  }
+
+  .feedback-error {
+    background: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #f44336;
+  }
+
+  .feedback-info {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    border-left: 4px solid #9c27b0;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
