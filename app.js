@@ -22,7 +22,16 @@ function renderBooks() {
     const list = document.getElementById(status);
     if (!list) return;
     list.innerHTML = "";
-    books.filter(book => book.status === status).forEach(book => {
+    
+    let columnBooks = books.filter(book => book.status === status);
+    
+    // Appliquer le tri automatique
+    const sortType = getColumnAutoSort(status);
+    if (sortType !== 'none') {
+      columnBooks = sortBooks(columnBooks, sortType);
+    }
+    
+    columnBooks.forEach(book => {
       const div = document.createElement("div");
       div.className = "book-card";
       div.innerHTML = `
@@ -34,6 +43,28 @@ function renderBooks() {
       `;
       list.appendChild(div);
     });
+  });
+}
+
+function sortBooks(books, sortType) {
+  return [...books].sort((a, b) => {
+    switch (sortType) {
+      case 'title':
+        return a.title.localeCompare(b.title);
+      case 'author':
+        return a.author.localeCompare(b.author);
+      case 'rating':
+        const ratingA = a.rating || 0;
+        const ratingB = b.rating || 0;
+        return ratingB - ratingA; // Tri décroissant (meilleures notes en premier)
+      case 'date':
+        // Utiliser l'ISBN comme proxy pour la date (les nouveaux ont des timestamps plus récents)
+        const dateA = parseInt(a.isbn.replace('u', '')) || 0;
+        const dateB = parseInt(b.isbn.replace('u', '')) || 0;
+        return dateB - dateA; // Tri décroissant (plus récents en premier)
+      default:
+        return 0;
+    }
   });
 }
 
@@ -85,6 +116,8 @@ function openAddBookModal() {
   
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("addBookBtn").onclick = openAddBookModal;
+    document.getElementById("showHiddenColumnsBtn").onclick = openHiddenColumnsModal;
+    updateHiddenColumnsButton();
   });
 
 function openBookDetailModal(isbn) {
@@ -195,4 +228,233 @@ function deleteBook(isbn) {
   }
 }
 
+function openColumnCustomizeModal(status) {
+  const modal = document.getElementById("modal");
+  modal.innerHTML = `
+    <div class="modal-content column-custom-modal">
+      <button class="close-modal" onclick="closeModal()">×</button>
+      <h2>Personnaliser la colonne "${getColumnName(status)}"</h2>
+      <form id="customizeColumnForm">
+        <div class="customize-row">
+          <label>Nom de la colonne <input name="columnName" value="${getColumnName(status)}"></label>
+        </div>
+        <div class="customize-row">
+          <label>Icône de la colonne 
+            <select name="columnIcon">
+              <option value="📚" ${getColumnIcon(status) === '📚' ? 'selected' : ''}>📚 Livres</option>
+              <option value="⏳" ${getColumnIcon(status) === '⏳' ? 'selected' : ''}>⏳ En attente</option>
+              <option value="✅" ${getColumnIcon(status) === '✅' ? 'selected' : ''}>✅ Terminé</option>
+              <option value="🔥" ${getColumnIcon(status) === '🔥' ? 'selected' : ''}>🔥 Populaire</option>
+              <option value="⭐" ${getColumnIcon(status) === '⭐' ? 'selected' : ''}>⭐ Favoris</option>
+              <option value="📖" ${getColumnIcon(status) === '📖' ? 'selected' : ''}>📖 Lecture</option>
+              <option value="💡" ${getColumnIcon(status) === '💡' ? 'selected' : ''}>💡 Idées</option>
+              <option value="🎯" ${getColumnIcon(status) === '🎯' ? 'selected' : ''}>🎯 Objectifs</option>
+            </select>
+          </label>
+        </div>
+        <div class="customize-row">
+          <label>Couleur de fond <input type="color" name="columnColor" value="${getColumnColor(status)}"></label>
+        </div>
+        <div class="customize-row">
+          <label>Couleur du texte <input type="color" name="textColor" value="${getColumnTextColor(status)}"></label>
+        </div>
+        <div class="customize-row">
+          <label>Largeur de la colonne
+            <select name="columnWidth">
+              <option value="narrow" ${getColumnWidth(status) === 'narrow' ? 'selected' : ''}>Étroite</option>
+              <option value="normal" ${getColumnWidth(status) === 'normal' ? 'selected' : ''}>Normale</option>
+              <option value="wide" ${getColumnWidth(status) === 'wide' ? 'selected' : ''}>Large</option>
+            </select>
+          </label>
+        </div>
+        <div class="customize-row">
+          <label>Tri automatique des livres
+            <select name="autoSort">
+              <option value="none" ${getColumnAutoSort(status) === 'none' ? 'selected' : ''}>Aucun tri</option>
+              <option value="title" ${getColumnAutoSort(status) === 'title' ? 'selected' : ''}>Par titre</option>
+              <option value="author" ${getColumnAutoSort(status) === 'author' ? 'selected' : ''}>Par auteur</option>
+              <option value="rating" ${getColumnAutoSort(status) === 'rating' ? 'selected' : ''}>Par note</option>
+              <option value="date" ${getColumnAutoSort(status) === 'date' ? 'selected' : ''}>Par date d'ajout</option>
+            </select>
+          </label>
+        </div>
+        <div class="customize-row">
+          <label>
+            <input type="checkbox" name="columnVisible" ${isColumnVisible(status) ? 'checked' : ''}>
+            Afficher cette colonne
+          </label>
+        </div>
+        <button type="submit">Sauvegarder</button>
+      </form>
+    </div>
+  `;
+  modal.classList.remove("hidden");
+
+  document.getElementById("customizeColumnForm").onsubmit = function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+    
+    prefs[status] = {
+      name: form.columnName.value,
+      icon: form.columnIcon.value,
+      color: form.columnColor.value,
+      textColor: form.textColor.value,
+      width: form.columnWidth.value,
+      autoSort: form.autoSort.value,
+      visible: form.columnVisible.checked
+    };
+    
+    localStorage.setItem('columnPrefs', JSON.stringify(prefs));
+    closeModal();
+    renderBooks();
+    renderColumnHeaders();
+  };
+}
+
+function isColumnVisible(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  return prefs[status] ? (prefs[status].visible !== false) : true;
+}
+
+function getColumnName(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  return (prefs[status] && prefs[status].name) || defaultColumnNames[status];
+}
+
+function getColumnColor(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  return (prefs[status] && prefs[status].color) || defaultColumnColors[status];
+}
+
+function getColumnIcon(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  return (prefs[status] && prefs[status].icon) || defaultColumnIcons[status];
+}
+
+function getColumnTextColor(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  return (prefs[status] && prefs[status].textColor) || defaultColumnTextColors[status];
+}
+
+function getColumnWidth(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  return (prefs[status] && prefs[status].width) || defaultColumnWidths[status];
+}
+
+function getColumnAutoSort(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  return (prefs[status] && prefs[status].autoSort) || defaultColumnAutoSorts[status];
+}
+
+const defaultColumnNames = {
+  'to-read': 'À lire',
+  'reading': 'En cours',
+  'read': 'Lu'
+};
+
+const defaultColumnColors = {
+  'to-read': '#e6fffa',
+  'reading': '#fffbe6',
+  'read': '#e6ffe6'
+};
+
+const defaultColumnIcons = {
+  'to-read': '📚',
+  'reading': '⏳',
+  'read': '✅'
+};
+
+const defaultColumnTextColors = {
+  'to-read': '#004d40',
+  'reading': '#66512c',
+  'read': '#00695c'
+};
+
+const defaultColumnWidths = {
+  'to-read': 'normal',
+  'reading': 'normal',
+  'read': 'normal'
+};
+
+const defaultColumnAutoSorts = {
+  'to-read': 'none',
+  'reading': 'none',
+  'read': 'none'
+};
+
+function renderColumnHeaders() {
+  ["to-read", "reading", "read"].forEach(status => {
+    const column = document.getElementById(status).parentElement;
+    const h2 = column.querySelector('h2');
+    
+    // Appliquer le nom et l'icône
+    h2.textContent = `${getColumnIcon(status)} ${getColumnName(status)}`;
+    
+    // Appliquer les couleurs
+    h2.style.background = getColumnColor(status);
+    h2.style.color = getColumnTextColor(status);
+    
+    // Appliquer la largeur
+    const widthClass = getColumnWidth(status);
+    column.className = `column column-${widthClass}`;
+    
+    // Masquer/afficher la colonne
+    if (isColumnVisible(status)) {
+      column.style.display = 'flex';
+    } else {
+      column.style.display = 'none';
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderColumnHeaders();
+});
+
 document.addEventListener("DOMContentLoaded", fetchBooks);
+
+function openHiddenColumnsModal() {
+  const hiddenColumns = ["to-read", "reading", "read"].filter(status => !isColumnVisible(status));
+  
+  if (hiddenColumns.length === 0) {
+    alert("Aucune colonne n'est actuellement masquée.");
+    return;
+  }
+
+  const modal = document.getElementById("modal");
+  modal.innerHTML = `
+    <div class="modal-content hidden-columns-modal">
+      <button class="close-modal" onclick="closeModal()">×</button>
+      <h2>Colonnes masquées</h2>
+      <div class="hidden-columns-list">
+        ${hiddenColumns.map(status => `
+          <div class="hidden-column-item">
+            <span>${getColumnName(status)}</span>
+            <button onclick="showColumn('${status}')" class="show-column-btn">Afficher</button>
+          </div>
+        `).join('')}
+      </div>
+      <button onclick="closeModal()" class="close-btn">Fermer</button>
+    </div>
+  `;
+  modal.classList.remove("hidden");
+}
+
+function showColumn(status) {
+  const prefs = JSON.parse(localStorage.getItem('columnPrefs') || '{}');
+  if (!prefs[status]) prefs[status] = {};
+  prefs[status].visible = true;
+  localStorage.setItem('columnPrefs', JSON.stringify(prefs));
+  
+  renderColumnHeaders();
+  closeModal();
+  
+  // Rouvrir la modale des colonnes masquées si il y en a encore
+  setTimeout(() => {
+    const remainingHidden = ["to-read", "reading", "read"].filter(s => !isColumnVisible(s));
+    if (remainingHidden.length > 0) {
+      openHiddenColumnsModal();
+    }
+  }, 100);
+}

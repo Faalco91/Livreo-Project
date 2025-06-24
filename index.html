@@ -9,20 +9,32 @@
 <body>
   <header>
     <h1>Ma Bibliothèque</h1>
-    <button id="addBookBtn">Ajouter un livre</button>
+    <div>
+      <button id="addBookBtn">Ajouter un livre</button>
+      <button id="showHiddenColumnsBtn">👁️ Afficher colonnes masquées</button>
+    </div>
   </header>
   <main>
     <div id="columns" class="columns-container">
       <div class="column">
-        <h2>À lire</h2>
+        <div class="column-header">
+          <h2>À lire</h2>
+          <button class="customize-column-btn" onclick="openColumnCustomizeModal('to-read')">⚙️</button>
+        </div>
         <div class="books-list" id="to-read"></div>
       </div>
       <div class="column">
-        <h2>En cours</h2>
+        <div class="column-header">
+          <h2>En cours</h2>
+          <button class="customize-column-btn" onclick="openColumnCustomizeModal('reading')">⚙️</button>
+        </div>
         <div class="books-list" id="reading"></div>
       </div>
       <div class="column">
-        <h2>Lu</h2>
+        <div class="column-header">
+          <h2>Lu</h2>
+          <button class="customize-column-btn" onclick="openColumnCustomizeModal('read')">⚙️</button>
+        </div>
         <div class="books-list" id="read"></div>
       </div>
     </div>
