@@ -6,7 +6,9 @@ function fetchBooks() {
     .then(data => {
       books = data.map(book => ({
         ...book,
-        status: 'to-read'
+        status: 'to-read',
+        rating: 0,
+        comment: ''
       }));
       renderBooks();
     })
@@ -22,23 +24,119 @@ function renderBooks() {
     const list = document.getElementById(status);
     if (!list) return;
     list.innerHTML = "";
+    
     books.filter(book => book.status === status).forEach(book => {
       const div = document.createElement("div");
       div.className = "book-card";
+      
+      // Ajout des attributs pour le drag & drop
+      div.draggable = true;
+      div.dataset.isbn = book.isbn;
+      
+      // Affichage de la note sous forme d'étoiles
+      const starsDisplay = generateStarsDisplay(book.rating || 0);
+      
       div.innerHTML = `
-        <div>
-          <strong>${book.title}</strong><br>
-          <em>${book.author}</em>
+        <div class="book-content">
+          <div class="book-text">
+            <strong>${book.title}</strong><br>
+            <em>${book.author}</em>
+          </div>
+          <div class="rating-display">${starsDisplay}</div>
         </div>
-        
         <button class="detail-btn" onclick="openBookDetailModal('${book.isbn}')">Voir détails</button>
-
       `;
+      
+      // Ajout des événements drag & drop
+      div.addEventListener('dragstart', handleDragStart);
+      div.addEventListener('dragend', handleDragEnd);
+      
       list.appendChild(div);
     });
   });
+  
+  // Configuration des zones de drop
+  setupDropZones();
 }
 
+// Fonction pour afficher les étoiles (lecture seule sur les cartes)
+function generateStarsDisplay(rating) {
+  let stars = '';
+  for (let i = 1; i <= 5; i++) {
+    const starClass = i <= rating ? 'star-display filled' : 'star-display';
+    stars += `<span class="${starClass}">★</span>`;
+  }
+  return stars;
+}
+
+// Variables pour le drag & drop
+let draggedBook = null;
+
+function handleDragStart(e) {
+  draggedBook = e.target.dataset.isbn;
+  e.target.style.opacity = '0.5';
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', e.target.outerHTML);
+}
+
+function handleDragEnd(e) {
+  e.target.style.opacity = '1';
+  draggedBook = null;
+}
+
+function setupDropZones() {
+  const columns = document.querySelectorAll('.column');
+  columns.forEach(column => {
+    // Supprimer les anciens événements pour éviter les doublons
+    column.removeEventListener('dragover', handleDragOver);
+    column.removeEventListener('drop', handleDrop);
+    column.removeEventListener('dragenter', handleDragEnter);
+    column.removeEventListener('dragleave', handleDragLeave);
+    
+    // Ajouter les nouveaux événements
+    column.addEventListener('dragover', handleDragOver);
+    column.addEventListener('drop', handleDrop);
+    column.addEventListener('dragenter', handleDragEnter);
+    column.addEventListener('dragleave', handleDragLeave);
+  });
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+  e.preventDefault();
+  if (e.target.closest('.column')) {
+    e.target.closest('.column').classList.add('drag-over');
+  }
+}
+
+function handleDragLeave(e) {
+  if (e.target.closest('.column') && !e.target.closest('.column').contains(e.relatedTarget)) {
+    e.target.closest('.column').classList.remove('drag-over');
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const column = e.target.closest('.column');
+  if (column) {
+    column.classList.remove('drag-over');
+  }
+  
+  if (!draggedBook) return;
+  
+  const newStatus = column.querySelector('.books-list').id;
+  const book = books.find(b => b.isbn === draggedBook);
+  
+  if (book && book.status !== newStatus) {
+    book.status = newStatus;
+    renderBooks();
+    console.log(`Livre "${book.title}" déplacé vers ${newStatus}`);
+  }
+}
 
 function openAddBookModal() {
     const modal = document.getElementById("modal");
@@ -49,9 +147,7 @@ function openAddBookModal() {
         <form id="addBookForm">
           <label>Titre <input name="title" required></label><br>
           <label>Auteur <input name="author" required></label><br>
-
           <label>Nombre de pages <input name="pages" type="number" min="1" placeholder="Ex: 300"></label><br>
-
           <label>Status
             <select name="status">
               <option value="to-read">À lire</option>
@@ -72,13 +168,12 @@ function openAddBookModal() {
         isbn: "u" + Date.now(),
         title: form.title.value,
         author: form.author.value,
-
         pages: form.pages.value ? parseInt(form.pages.value) : null,
-
-        status: form.status.value
+        status: form.status.value,
+        rating: 0,
+        comment: ''
       };
       books.push(book);
-      saveBooks && saveBooks(); 
       closeModal();
       renderBooks();
     };
@@ -93,7 +188,6 @@ function openAddBookModal() {
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("addBookBtn").onclick = openAddBookModal;
   });
-
 
 function openBookDetailModal(isbn) {
   const book = books.find(b => b.isbn === isbn);
@@ -168,7 +262,6 @@ function setRating(isbn, rating) {
   const book = books.find(b => b.isbn === isbn);
   if (book) {
     book.rating = rating;
-    // Mettre à jour l'affichage des étoiles
     const starsContainer = document.querySelector('.rating-stars');
     if (starsContainer) {
       starsContainer.innerHTML = generateRatingStars(rating, isbn);
@@ -180,31 +273,28 @@ function saveBookChanges(isbn) {
   const book = books.find(b => b.isbn === isbn);
   if (!book) return;
 
-  // Récupérer les nouvelles valeurs
   const newStatus = document.getElementById(`status-${isbn}`).value;
   const newComment = document.getElementById(`comment-${isbn}`).value;
 
-  // Mettre à jour le livre
   book.status = newStatus;
   book.comment = newComment;
 
-  // Sauvegarder et fermer la modale
-  saveBooks && saveBooks();
   closeModal();
   renderBooks();
+  
+  console.log(`Livre "${book.title}" mis à jour:`, {
+    status: newStatus,
+    rating: book.rating,
+    comment: newComment
+  });
 }
 
 function deleteBook(isbn) {
   if (confirm('Êtes-vous sûr de vouloir supprimer ce livre ?')) {
     books = books.filter(b => b.isbn !== isbn);
-    saveBooks && saveBooks();
     closeModal();
     renderBooks();
   }
 }
 
 document.addEventListener("DOMContentLoaded", fetchBooks);
-
-
-document.addEventListener("DOMContentLoaded", fetchBooks);
-
