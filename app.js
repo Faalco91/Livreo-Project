@@ -357,36 +357,6 @@ function deleteBook(isbn) {
   }
 }
 
-function clearAllDataWithConfirmation() {
-  const movedBooks = books.filter(b => b.status !== 'to-read').length;
-  const ratedBooks = books.filter(b => b.rating > 0).length;
-  const commentedBooks = books.filter(b => b.comment && b.comment.trim()).length;
-  const addedBooks = books.filter(b => b.isbn.startsWith('u')).length;
-  
-  const message = `⚠️ ATTENTION ! Cette action va réinitialiser vos modifications :
-
-📚 ${movedBooks} livre(s) déplacé(s) → retour "À lire"
-⭐ ${ratedBooks} note(s) → supprimées
-💭 ${commentedBooks} commentaire(s) → supprimés
-➕ ${addedBooks} livre(s) ajouté(s) → supprimés
-
-Les livres originaux seront remis dans "À lire".
-
-Tapez "RESET" pour confirmer :`;
-
-  const userInput = prompt(message);
-  
-  if (userInput === "RESET") {
-    localStorage.removeItem('livreo_books');
-    books = [];
-    renderBooks();
-    alert('✅ Vos modifications ont été réinitialisées.\nLa page va se recharger pour récupérer les données initiales.');
-    window.location.reload();
-  } else if (userInput !== null) {
-    alert('❌ Réinitialisation annulée.\nVous devez taper exactement "RESET" pour confirmer.');
-  }
-}
-
 function clearAllData() {
   if (confirm('⚠️ ATTENTION ! Cela va supprimer TOUS vos livres, notes et commentaires. Continuer ?')) {
     localStorage.removeItem('livreo_books');
