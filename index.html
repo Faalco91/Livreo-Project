@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <title>Livreo - Ma bibliothèque en ligne</title>
   <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
   <header>
     <h1>Ma Bibliothèque</h1>
-    <button id="addBookBtn">Ajouter un livre</button>
+    <div class="header-buttons">
+      <button id="addBookBtn">Ajouter un livre</button>
+      <button id="clearDataBtn" class="danger-btn">🔄 Réinitialiser</button>
+    </div>
   </header>
   <main>
     <div id="columns" class="columns-container">
@@ -30,9 +32,4 @@
   <div id="modal" class="modal hidden"></div>
 </body>
 <script src="app.js"></script>
-
-
 </html>
-
-</html>
-

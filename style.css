@@ -21,6 +21,12 @@ header h1 {
   letter-spacing: 1px;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 #addBookBtn {
   padding: 0.7em 2.2em;
   font-size: 1.2rem;
@@ -30,10 +36,28 @@ header h1 {
   border-radius: 12px;
   box-shadow: 0 2px 8px #0002;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 #addBookBtn:hover {
   background: #3aafa9;
+  transform: translateY(-2px) scale(1.04);
+}
+
+.danger-btn {
+  padding: 0.7em 1.5em;
+  font-size: 1rem;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0002;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0.8;
+}
+.danger-btn:hover {
+  background: #c0392b;
+  opacity: 1;
   transform: translateY(-2px) scale(1.04);
 }
 
@@ -60,7 +84,6 @@ header h1 {
   transition: all 0.3s ease;
 }
 
-/* Styles pour le drag & drop */
 .column.drag-over {
   background: #e6fffa;
   border: 2px dashed #5bc0be;
@@ -85,7 +108,7 @@ header h1 {
   flex-direction: column;
   gap: 1.1rem;
   margin-top: 1rem;
-  min-height: 100px; /* Pour permettre le drop même si vide */
+  min-height: 100px;
 }
 
 .book-card {
@@ -98,7 +121,7 @@ header h1 {
   justify-content: space-between;
   align-items: center;
   gap: 0.8rem;
-  cursor: grab; /* Curseur pour indiquer que c'est déplaçable */
+  cursor: grab;
   position: relative;
   transition: all 0.2s;
 }
@@ -112,7 +135,6 @@ header h1 {
   cursor: grabbing;
 }
 
-/* Style pendant le drag */
 .book-card[style*="opacity: 0.5"] {
   transform: rotate(5deg);
   box-shadow: 0 8px 16px #0003;
@@ -165,7 +187,7 @@ header h1 {
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s;
-  flex-shrink: 0; /* Empêche le bouton de rétrécir */
+  flex-shrink: 0;
 }
 .detail-btn:hover {
   background: #3aafa9;
@@ -261,7 +283,6 @@ header h1 {
 }
 
 
-/* Styles pour la modale de détail du livre */
 .book-detail-modal {
   max-width: 500px;
   min-width: 400px;
@@ -298,7 +319,6 @@ header h1 {
   gap: 0.5rem;
 }
 
-/* Styles pour les étoiles cliquables dans la modale */
 .rating-stars {
   display: flex;
   gap: 0.3rem;
