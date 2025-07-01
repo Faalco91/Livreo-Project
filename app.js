@@ -163,6 +163,7 @@ function openBookDetailModal(isbn) {
     <div class="modal-content book-detail-modal">
       <button class="close-modal" onclick="closeModal()">×</button>
       <h2>Détails du livre</h2>
+      <form id="bookDetailForm">
       <div class="book-detail-content">
         <div class="book-info">
           <h3>${book.title}</h3>
@@ -171,7 +172,6 @@ function openBookDetailModal(isbn) {
           <p class="status"><strong>Status :</strong> ${getStatusLabel(book.status)}</p>
           ${book.isbn ? `<p class="isbn"><strong>ISBN :</strong> ${book.isbn}</p>` : ''}
         </div>
-        
         <div class="book-actions">
           <div class="rating-section">
             <label><strong>Note :</strong></label>
@@ -179,12 +179,10 @@ function openBookDetailModal(isbn) {
               ${generateRatingStars(book.rating || 0, isbn)}
             </div>
           </div>
-          
           <div class="comment-section">
             <label><strong>Commentaire :</strong></label>
             <textarea id="comment-${isbn}" placeholder="Ajouter un commentaire..." rows="4">${book.comment || ''}</textarea>
           </div>
-          
           <div class="status-change">
             <label><strong>Changer le status :</strong></label>
             <select id="status-${isbn}">
@@ -193,16 +191,20 @@ function openBookDetailModal(isbn) {
               <option value="read" ${book.status === 'read' ? 'selected' : ''}>Lu</option>
             </select>
           </div>
-          
           <div class="action-buttons">
-            <button class="save-btn" onclick="saveBookChanges('${isbn}')">Sauvegarder</button>
-            <button class="delete-btn" onclick="deleteBook('${isbn}')">Supprimer</button>
+            <button class="save-btn" type="submit">Sauvegarder</button>
+            <button class="delete-btn" type="button" onclick="deleteBook('${isbn}')">Supprimer</button>
           </div>
         </div>
       </div>
+      </form>
     </div>
   `;
   modal.classList.remove("hidden");
+  document.getElementById("bookDetailForm").onsubmit = function(e) {
+    e.preventDefault();
+    saveBookChanges(isbn);
+  };
 }
 
 function getStatusLabel(status) {
@@ -236,20 +238,30 @@ function setRating(isbn, rating) {
 }
 
 function saveBookChanges(isbn) {
+  console.log('saveBookChanges appelée pour', isbn);
   const book = books.find(b => b.isbn === isbn);
-  if (!book) return;
+  if (!book) {
+    console.log('Livre non trouvé');
+    return;
+  }
 
   // Récupérer les nouvelles valeurs
   const newStatus = document.getElementById(`status-${isbn}`).value;
   const newComment = document.getElementById(`comment-${isbn}`).value;
+  console.log('Nouveau status:', newStatus, 'Nouveau commentaire:', newComment);
 
   // Mettre à jour le livre
   book.status = newStatus;
   book.comment = newComment;
+  console.log('Livre mis à jour', book);
 
   // Sauvegarder et fermer la modale
-  saveBooks && saveBooks();
+  if (typeof saveBooks === 'function') {
+    saveBooks();
+    console.log('saveBooks appelée');
+  }
   closeModal();
+  console.log('closeModal appelée');
   renderBooks();
   showSuccess(`Modifications de "${book.title}" sauvegardées !`);
 }
