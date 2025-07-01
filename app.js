@@ -1,6 +1,32 @@
 let books = [];
 
+function saveBooks() {
+  try {
+    localStorage.setItem('livreo_books', JSON.stringify(books));
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde:', error);
+  }
+}
+
+function loadBooks() {
+  try {
+    const savedBooks = localStorage.getItem('livreo_books');
+    if (savedBooks) {
+      books = JSON.parse(savedBooks);
+      return true;
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement:', error);
+  }
+  return false;
+}
+
 function fetchBooks() {
+  if (loadBooks()) {
+    renderBooks();
+    return;
+  }
+
   fetch('https://keligmartin.github.io/api/books.json')
     .then(response => response.json())
     .then(data => {
@@ -10,6 +36,7 @@ function fetchBooks() {
         rating: 0,
         comment: ''
       }));
+      saveBooks();
       renderBooks();
     })
     .catch(error => {
@@ -29,11 +56,9 @@ function renderBooks() {
       const div = document.createElement("div");
       div.className = "book-card";
       
-      // Ajout des attributs pour le drag & drop
       div.draggable = true;
       div.dataset.isbn = book.isbn;
       
-      // Affichage de la note sous forme d'étoiles
       const starsDisplay = generateStarsDisplay(book.rating || 0);
       
       div.innerHTML = `
@@ -47,7 +72,6 @@ function renderBooks() {
         <button class="detail-btn" onclick="openBookDetailModal('${book.isbn}')">Voir détails</button>
       `;
       
-      // Ajout des événements drag & drop
       div.addEventListener('dragstart', handleDragStart);
       div.addEventListener('dragend', handleDragEnd);
       
@@ -55,11 +79,9 @@ function renderBooks() {
     });
   });
   
-  // Configuration des zones de drop
   setupDropZones();
 }
 
-// Fonction pour afficher les étoiles (lecture seule sur les cartes)
 function generateStarsDisplay(rating) {
   let stars = '';
   for (let i = 1; i <= 5; i++) {
@@ -69,7 +91,6 @@ function generateStarsDisplay(rating) {
   return stars;
 }
 
-// Variables pour le drag & drop
 let draggedBook = null;
 
 function handleDragStart(e) {
@@ -87,13 +108,11 @@ function handleDragEnd(e) {
 function setupDropZones() {
   const columns = document.querySelectorAll('.column');
   columns.forEach(column => {
-    // Supprimer les anciens événements pour éviter les doublons
     column.removeEventListener('dragover', handleDragOver);
     column.removeEventListener('drop', handleDrop);
     column.removeEventListener('dragenter', handleDragEnter);
     column.removeEventListener('dragleave', handleDragLeave);
     
-    // Ajouter les nouveaux événements
     column.addEventListener('dragover', handleDragOver);
     column.addEventListener('drop', handleDrop);
     column.addEventListener('dragenter', handleDragEnter);
@@ -133,61 +152,63 @@ function handleDrop(e) {
   
   if (book && book.status !== newStatus) {
     book.status = newStatus;
+    saveBooks();
     renderBooks();
-    console.log(`Livre "${book.title}" déplacé vers ${newStatus}`);
   }
 }
 
 function openAddBookModal() {
-    const modal = document.getElementById("modal");
-    modal.innerHTML = `
-      <div class="modal-content">
-        <button class="close-modal" onclick="closeModal()">×</button>
-        <h2>Ajouter un livre</h2>
-        <form id="addBookForm">
-          <label>Titre <input name="title" required></label><br>
-          <label>Auteur <input name="author" required></label><br>
-          <label>Nombre de pages <input name="pages" type="number" min="1" placeholder="Ex: 300"></label><br>
-          <label>Status
-            <select name="status">
-              <option value="to-read">À lire</option>
-              <option value="reading">En cours</option>
-              <option value="read">Lu</option>
-            </select>
-          </label><br>
-          <button type="submit">Ajouter</button>
-        </form>
-      </div>
-    `;
-    modal.classList.remove("hidden");
-  
-    document.getElementById("addBookForm").onsubmit = function(e) {
-      e.preventDefault();
-      const form = e.target;
-      const book = {
-        isbn: "u" + Date.now(),
-        title: form.title.value,
-        author: form.author.value,
-        pages: form.pages.value ? parseInt(form.pages.value) : null,
-        status: form.status.value,
-        rating: 0,
-        comment: ''
-      };
-      books.push(book);
-      closeModal();
-      renderBooks();
+  const modal = document.getElementById("modal");
+  modal.innerHTML = `
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal()">×</button>
+      <h2>Ajouter un livre</h2>
+      <form id="addBookForm">
+        <label>Titre <input name="title" required></label><br>
+        <label>Auteur <input name="author" required></label><br>
+        <label>Nombre de pages <input name="pages" type="number" min="1" placeholder="Ex: 300"></label><br>
+        <label>Status
+          <select name="status">
+            <option value="to-read">À lire</option>
+            <option value="reading">En cours</option>
+            <option value="read">Lu</option>
+          </select>
+        </label><br>
+        <button type="submit">Ajouter</button>
+      </form>
+    </div>
+  `;
+  modal.classList.remove("hidden");
+
+  document.getElementById("addBookForm").onsubmit = function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const book = {
+      isbn: "u" + Date.now(),
+      title: form.title.value,
+      author: form.author.value,
+      pages: form.pages.value ? parseInt(form.pages.value) : null,
+      status: form.status.value,
+      rating: 0,
+      comment: ''
     };
-  }
-  
-  function closeModal() {
-    const modal = document.getElementById("modal");
-    modal.classList.add("hidden");
-    modal.innerHTML = "";
-  }
-  
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("addBookBtn").onclick = openAddBookModal;
-  });
+    books.push(book);
+    saveBooks();
+    closeModal();
+    renderBooks();
+  };
+}
+
+function closeModal() {
+  const modal = document.getElementById("modal");
+  modal.classList.add("hidden");
+  modal.innerHTML = "";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("addBookBtn").onclick = openAddBookModal;
+  document.getElementById("clearDataBtn").onclick = clearAllDataWithConfirmation;
+});
 
 function openBookDetailModal(isbn) {
   const book = books.find(b => b.isbn === isbn);
@@ -262,6 +283,7 @@ function setRating(isbn, rating) {
   const book = books.find(b => b.isbn === isbn);
   if (book) {
     book.rating = rating;
+    saveBooks();
     const starsContainer = document.querySelector('.rating-stars');
     if (starsContainer) {
       starsContainer.innerHTML = generateRatingStars(rating, isbn);
@@ -279,22 +301,69 @@ function saveBookChanges(isbn) {
   book.status = newStatus;
   book.comment = newComment;
 
+  saveBooks();
   closeModal();
   renderBooks();
-  
-  console.log(`Livre "${book.title}" mis à jour:`, {
-    status: newStatus,
-    rating: book.rating,
-    comment: newComment
-  });
 }
 
 function deleteBook(isbn) {
   if (confirm('Êtes-vous sûr de vouloir supprimer ce livre ?')) {
     books = books.filter(b => b.isbn !== isbn);
+    saveBooks();
     closeModal();
     renderBooks();
   }
+}
+
+function clearAllDataWithConfirmation() {
+  const movedBooks = books.filter(b => b.status !== 'to-read').length;
+  const ratedBooks = books.filter(b => b.rating > 0).length;
+  const commentedBooks = books.filter(b => b.comment && b.comment.trim()).length;
+  const addedBooks = books.filter(b => b.isbn.startsWith('u')).length;
+  
+  const message = `⚠️ ATTENTION ! Cette action va réinitialiser vos modifications :
+
+📚 ${movedBooks} livre(s) déplacé(s) → retour "À lire"
+⭐ ${ratedBooks} note(s) → supprimées
+💭 ${commentedBooks} commentaire(s) → supprimés
+➕ ${addedBooks} livre(s) ajouté(s) → supprimés
+
+Les livres originaux seront remis dans "À lire".
+
+Tapez "RESET" pour confirmer :`;
+
+  const userInput = prompt(message);
+  
+  if (userInput === "RESET") {
+    localStorage.removeItem('livreo_books');
+    books = [];
+    renderBooks();
+    alert('✅ Vos modifications ont été réinitialisées.\nLa page va se recharger pour récupérer les données initiales.');
+    window.location.reload();
+  } else if (userInput !== null) {
+    alert('❌ Réinitialisation annulée.\nVous devez taper exactement "RESET" pour confirmer.');
+  }
+}
+
+function clearAllData() {
+  if (confirm('⚠️ ATTENTION ! Cela va supprimer TOUS vos livres, notes et commentaires. Continuer ?')) {
+    localStorage.removeItem('livreo_books');
+    books = [];
+    renderBooks();
+  }
+}
+
+function showStats() {
+  const stats = {
+    total: books.length,
+    toRead: books.filter(b => b.status === 'to-read').length,
+    reading: books.filter(b => b.status === 'reading').length,
+    read: books.filter(b => b.status === 'read').length,
+    rated: books.filter(b => b.rating > 0).length,
+    commented: books.filter(b => b.comment && b.comment.trim()).length
+  };
+  
+  alert(`📚 Votre bibliothèque:\n\n📖 Total: ${stats.total} livres\n📚 À lire: ${stats.toRead}\n📖 En cours: ${stats.reading}\n✅ Lus: ${stats.read}\n⭐ Notés: ${stats.rated}\n💭 Commentés: ${stats.commented}`);
 }
 
 document.addEventListener("DOMContentLoaded", fetchBooks);
