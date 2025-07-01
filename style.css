@@ -178,7 +178,7 @@ header h1 {
   color: #ffd700;
 }
 
-.detail-btn {
+.modal-btn {
   background: #5bc0be;
   color: white;
   border: none;
@@ -189,7 +189,7 @@ header h1 {
   transition: background 0.2s;
   flex-shrink: 0;
 }
-.detail-btn:hover {
+.modal-btn:hover {
   background: #3aafa9;
 }
 
@@ -243,6 +243,25 @@ header h1 {
 .close-modal:hover {
   opacity: 1;
 }
+
+.modal-content {
+  position: relative;
+  padding-top: 2.5rem;
+}
+
+.modal-content .modal-btn {
+  position: absolute;
+  top: 0.75rem;
+  color: black;
+  right: 2.5rem;
+  transform: translateY(-15%);
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
 
 .modal-content form label {
   display: flex;

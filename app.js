@@ -62,15 +62,21 @@ function renderBooks() {
       const starsDisplay = generateStarsDisplay(book.rating || 0);
       
       div.innerHTML = `
-        <div class="book-content">
-          <div class="book-text">
-            <strong>${book.title}</strong><br>
-            <em>${book.author}</em>
-          </div>
-          <div class="rating-display">${starsDisplay}</div>
+      <div class="book-content">
+        <div class="book-text">
+          <strong>${book.title}</strong><br>
+          <em>${book.author}</em>
         </div>
-        <button class="detail-btn" onclick="openBookDetailModal('${book.isbn}')">Voir détails</button>
-      `;
+        <div class="rating-display">${starsDisplay}</div>
+      </div>
+      <div class="card-actions">
+        <button class="modal-btn"
+                onclick="openBookViewModal('${book.isbn}')">
+          Voir détails
+        </button>
+      </div>
+    `;
+    
       
       div.addEventListener('dragstart', handleDragStart);
       div.addEventListener('dragend', handleDragEnd);
@@ -210,56 +216,92 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("clearDataBtn").onclick = clearAllDataWithConfirmation;
 });
 
-function openBookDetailModal(isbn) {
+
+function openBookViewModal(isbn) {
   const book = books.find(b => b.isbn === isbn);
   if (!book) return;
 
   const modal = document.getElementById("modal");
   modal.innerHTML = `
-    <div class="modal-content book-detail-modal">
+    <div class="modal-content book-view-modal" role="dialog" aria-modal="true">
+        <button class="modal-btn"
+                onclick="openBookEditModal('${book.isbn}')">
+          ...
+        </button>
       <button class="close-modal" onclick="closeModal()">×</button>
       <h2>Détails du livre</h2>
-      <div class="book-detail-content">
-        <div class="book-info">
-          <h3>${book.title}</h3>
-          <p class="author"><strong>Auteur :</strong> ${book.author}</p>
-          ${book.pages ? `<p class="pages"><strong>Nombre de pages :</strong> ${book.pages}</p>` : ''}
-          <p class="status"><strong>Status :</strong> ${getStatusLabel(book.status)}</p>
-          ${book.isbn ? `<p class="isbn"><strong>ISBN :</strong> ${book.isbn}</p>` : ''}
-        </div>
-        
-        <div class="book-actions">
-          <div class="rating-section">
-            <label><strong>Note :</strong></label>
-            <div class="rating-stars">
-              ${generateRatingStars(book.rating || 0, isbn)}
-            </div>
-          </div>
-          
-          <div class="comment-section">
-            <label><strong>Commentaire :</strong></label>
-            <textarea id="comment-${isbn}" placeholder="Ajouter un commentaire..." rows="4">${book.comment || ''}</textarea>
-          </div>
-          
-          <div class="status-change">
-            <label><strong>Changer le status :</strong></label>
-            <select id="status-${isbn}">
-              <option value="to-read" ${book.status === 'to-read' ? 'selected' : ''}>À lire</option>
-              <option value="reading" ${book.status === 'reading' ? 'selected' : ''}>En cours</option>
-              <option value="read" ${book.status === 'read' ? 'selected' : ''}>Lu</option>
-            </select>
-          </div>
-          
-          <div class="action-buttons">
-            <button class="save-btn" onclick="saveBookChanges('${isbn}')">Sauvegarder</button>
-            <button class="delete-btn" onclick="deleteBook('${isbn}')">Supprimer</button>
-          </div>
-        </div>
+      <div class="book-info">
+        <h3>${book.title}</h3>
+        <p><strong>Auteur :</strong> ${book.author}</p>
+        ${book.pages ? `<p><strong>Pages :</strong> ${book.pages}</p>` : ''}
+        <p><strong>Status :</strong> ${getStatusLabel(book.status)}</p>
+        <p><strong>ISBN :</strong> ${book.isbn}</p>
+        <p><strong>Note :</strong> ${generateStarsDisplay(book.rating)}</p>
+        ${book.comment ? `<p><strong>Commentaire :</strong><br>${book.comment}</p>` : ''}
       </div>
     </div>
   `;
   modal.classList.remove("hidden");
 }
+
+function openBookEditModal(isbn) {
+  const book = books.find(b => b.isbn === isbn);
+  if (!book) return;
+
+  const modal = document.getElementById("modal");
+  modal.innerHTML = `
+    <div class="modal-content book-edit-modal" role="dialog" aria-modal="true">
+      <button class="close-modal" onclick="closeModal()">×</button>
+      <h2>Modifier le livre</h2>
+      <form id="editBookForm">
+        <label>Titre
+          <input name="title" value="${book.title}" required>
+        </label><br>
+        <label>Auteur
+          <input name="author" value="${book.author}" required>
+        </label><br>
+        <label>Nombre de pages
+          <input name="pages" type="number" min="1" value="${book.pages || ''}">
+        </label><br>
+        <label>Status
+          <select name="status">
+            <option value="to-read" ${book.status==='to-read'?'selected':''}>À lire</option>
+            <option value="reading" ${book.status==='reading'?'selected':''}>En cours</option>
+            <option value="read" ${book.status==='read'?'selected':''}>Lu</option>
+          </select>
+        </label><br>
+        <label>Note
+          <div class="rating-stars">
+            ${generateRatingStars(book.rating, isbn)}
+          </div>
+        </label><br>
+        <label>Commentaire
+          <textarea name="comment" rows="4">${book.comment || ''}</textarea>
+        </label><br>
+        <div class="action-buttons">
+          <button type="submit" class="save-btn">Sauvegarder</button>
+          <button type="button" class="delete-btn" onclick="deleteBook('${isbn}')">Supprimer</button>
+        </div>
+      </form>
+    </div>
+  `;
+  modal.classList.remove("hidden");
+
+  document.getElementById("editBookForm").onsubmit = function(e) {
+    e.preventDefault();
+    const form = e.target;
+    book.title   = form.title.value;
+    book.author  = form.author.value;
+    book.pages   = form.pages.value ? parseInt(form.pages.value) : null;
+    book.status  = form.status.value;
+    book.comment = form.comment.value;
+    // la note est déjà mise à jour via setRating()
+    saveBooks();
+    closeModal();
+    renderBooks();
+  };
+}
+
 
 function getStatusLabel(status) {
   const labels = {
