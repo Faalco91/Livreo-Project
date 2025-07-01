@@ -1,327 +1,384 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f4f8;
-  }
-  
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(90deg, #2e4057 70%, #32475c 100%);
-    color: white;
-    padding: 1.5rem 3vw;
-    box-shadow: 0 2px 8px #0002;
-  }
-  
-  header h1 {
-    font-size: 2.3rem;
-    font-weight: bold;
-    margin: 0;
-    letter-spacing: 1px;
-  }
-  
-  #addBookBtn {
-    padding: 0.7em 2.2em;
-    font-size: 1.2rem;
-    background: #5bc0be;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px #0002;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  #addBookBtn:hover {
-    background: #3aafa9;
-    transform: translateY(-2px) scale(1.04);
-  }
-  
-  .columns-container {
-    display: flex;
-    gap: 2rem;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 3rem 0 2rem;
-  }
-  
-  .column {
-    background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 8px 24px #0001, 0 1.5px 7px #5bc0be33;
-    min-width: 330px;
-    max-width: 400px;
-    flex: 1 1 320px;
-    padding: 1.5rem 1.2rem 2rem;
-    display: flex;
-    flex-direction: column;
-    min-height: 300px;
-    position: relative;
-  }
-  
-  .column h2 {
-    text-align: center;
-    font-size: 1.4rem;
-    color: #3aafa9;
-    margin: 0 0 1rem 0;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-    background: #e6fffa;
-    border-radius: 8px;
-    padding: 0.5em;
-  }
-  
-  .books-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-    margin-top: 1rem;
-  }
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f4f8;
+}
 
-  .book-card {
-    background: #f7f9fa;
-    border-left: 6px solid #5bc0be;
-    border-radius: 12px;
-    padding: 1rem 1.3rem 0.9rem 1.1rem;
-    box-shadow: 0 1px 4px #0001;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.8rem;
-    cursor: default;
-    position: relative;
-    transition: box-shadow 0.2s, border 0.2s;
-  }
-  .book-card strong {
-    font-size: 1.08rem;
-    font-weight: bold;
-    color: #1d3244;
-  }
-  .book-card em {
-    font-size: 0.98rem;
-    color: #3aafa9;
-  }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #2e4057 70%, #32475c 100%);
+  color: white;
+  padding: 1.5rem 3vw;
+  box-shadow: 0 2px 8px #0002;
+}
+
+header h1 {
+  font-size: 2.3rem;
+  font-weight: bold;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+#addBookBtn {
+  padding: 0.7em 2.2em;
+  font-size: 1.2rem;
+  background: #5bc0be;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0002;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#addBookBtn:hover {
+  background: #3aafa9;
+  transform: translateY(-2px) scale(1.04);
+}
+
+.columns-container {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 0 2rem;
+}
+
+.column {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px #0001, 0 1.5px 7px #5bc0be33;
+  min-width: 330px;
+  max-width: 400px;
+  flex: 1 1 320px;
+  padding: 1.5rem 1.2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Styles pour le drag & drop */
+.column.drag-over {
+  background: #e6fffa;
+  border: 2px dashed #5bc0be;
+  transform: scale(1.02);
+  box-shadow: 0 12px 32px #5bc0be22;
+}
+
+.column h2 {
+  text-align: center;
+  font-size: 1.4rem;
+  color: #3aafa9;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  background: #e6fffa;
+  border-radius: 8px;
+  padding: 0.5em;
+}
+
+.books-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 1rem;
+  min-height: 100px; /* Pour permettre le drop même si vide */
+}
+
+.book-card {
+  background: #f7f9fa;
+  border-left: 6px solid #5bc0be;
+  border-radius: 12px;
+  padding: 1rem 1.3rem 0.9rem 1.1rem;
+  box-shadow: 0 1px 4px #0001;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: grab; /* Curseur pour indiquer que c'est déplaçable */
+  position: relative;
+  transition: all 0.2s;
+}
+
+.book-card:hover {
+  box-shadow: 0 4px 12px #0002;
+  transform: translateY(-2px);
+}
+
+.book-card:active {
+  cursor: grabbing;
+}
+
+/* Style pendant le drag */
+.book-card[style*="opacity: 0.5"] {
+  transform: rotate(5deg);
+  box-shadow: 0 8px 16px #0003;
+}
+
+.book-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.book-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.book-card strong {
+  font-size: 1.08rem;
+  font-weight: bold;
+  color: #1d3244;
+}
+
+.book-card em {
+  font-size: 0.98rem;
+  color: #3aafa9;
+}
+
+.rating-display {
+  display: flex;
+  gap: 0.2rem;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.star-display {
+  color: #ddd;
+}
+
+.star-display.filled {
+  color: #ffd700;
+}
+
+.detail-btn {
+  background: #5bc0be;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4em 0.8em;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0; /* Empêche le bouton de rétrécir */
+}
+.detail-btn:hover {
+  background: #3aafa9;
+}
+
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(44, 62, 80, 0.43);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  animation: fadeInModal 0.22s;
+}
+@keyframes fadeInModal {
+  from { opacity: 0; } to { opacity: 1; }
+}
+.modal.hidden {
+  display: none;
+}
+.modal-content {
+  background: #fff;
+  padding: 2.3rem 2.1rem 2rem 2.1rem;
+  border-radius: 22px;
+  min-width: 330px;
+  max-width: 420px;
+  width: 95vw;
+  box-shadow: 0 16px 36px #0003;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  animation: scaleIn 0.15s;
+}
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0.6; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.close-modal {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.2rem;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #2e4057;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+}
+.close-modal:hover {
+  opacity: 1;
+}
+
+.modal-content form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 1rem;
+}
+.modal-content form input,
+.modal-content form select {
+  margin-top: 0.3em;
+  padding: 0.5em 0.9em;
+  border-radius: 7px;
+  border: 1.3px solid #3aafa97a;
+  background: #f4f9fa;
+  font-size: 1.08rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.modal-content form input:focus,
+.modal-content form select:focus {
+  border: 1.5px solid #5bc0be;
+}
+.modal-content form button[type="submit"] {
+  margin-top: 0.4em;
+  background: #5bc0be;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.6em 2em;
+  font-size: 1.08rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.modal-content form button[type="submit"]:hover {
+  background: #3aafa9;
+}
 
 
-  .detail-btn {
-    background: #5bc0be;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 0.4em 0.8em;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .detail-btn:hover {
-    background: #3aafa9;
-  }
+/* Styles pour la modale de détail du livre */
+.book-detail-modal {
+  max-width: 500px;
+  min-width: 400px;
+}
 
+.book-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
 
-  .modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(44, 62, 80, 0.43);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99;
-    animation: fadeInModal 0.22s;
-  }
-  @keyframes fadeInModal {
-    from { opacity: 0; } to { opacity: 1; }
-  }
-  .modal.hidden {
-    display: none;
-  }
-  .modal-content {
-    background: #fff;
-    padding: 2.3rem 2.1rem 2rem 2.1rem;
-    border-radius: 22px;
-    min-width: 330px;
-    max-width: 420px;
-    width: 95vw;
-    box-shadow: 0 16px 36px #0003;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-    animation: scaleIn 0.15s;
-  }
-  @keyframes scaleIn {
-    from { transform: scale(0.95); opacity: 0.6; }
-    to   { transform: scale(1); opacity: 1; }
-  }
-  
-  .close-modal {
-    position: absolute;
-    top: 1.1rem;
-    right: 1.2rem;
-    background: none;
-    border: none;
-    font-size: 1.6rem;
-    cursor: pointer;
-    color: #2e4057;
-    opacity: 0.75;
-    transition: opacity 0.2s;
-  }
-  .close-modal:hover {
-    opacity: 1;
-  }
-  
-  .modal-content form label {
-    display: flex;
-    flex-direction: column;
-    font-weight: 500;
-    color: #222;
-    margin-bottom: 1rem;
-  }
-  .modal-content form input,
-  .modal-content form select {
-    margin-top: 0.3em;
-    padding: 0.5em 0.9em;
-    border-radius: 7px;
-    border: 1.3px solid #3aafa97a;
-    background: #f4f9fa;
-    font-size: 1.08rem;
-    outline: none;
-    transition: border 0.2s;
-  }
-  .modal-content form input:focus,
-  .modal-content form select:focus {
-    border: 1.5px solid #5bc0be;
-  }
-  .modal-content form button[type="submit"] {
-    margin-top: 0.4em;
-    background: #5bc0be;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 0.6em 2em;
-    font-size: 1.08rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.18s;
-  }
-  .modal-content form button[type="submit"]:hover {
-    background: #3aafa9;
-  }
-  
+.book-info h3 {
+  color: #2e4057;
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  border-bottom: 2px solid #5bc0be;
+  padding-bottom: 0.5rem;
+}
 
-  /* Styles pour la modale de détail du livre */
-  .book-detail-modal {
-    max-width: 500px;
-    min-width: 400px;
-  }
+.book-info p {
+  margin: 0.5rem 0;
+  color: #444;
+}
 
-  .book-detail-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
+.book-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
 
-  .book-info h3 {
-    color: #2e4057;
-    font-size: 1.5rem;
-    margin: 0 0 1rem 0;
-    border-bottom: 2px solid #5bc0be;
-    padding-bottom: 0.5rem;
-  }
+.rating-section, .comment-section, .status-change {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-  .book-info p {
-    margin: 0.5rem 0;
-    color: #444;
-  }
+/* Styles pour les étoiles cliquables dans la modale */
+.rating-stars {
+  display: flex;
+  gap: 0.3rem;
+  font-size: 1.5rem;
+}
 
-  .book-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-  }
+.star {
+  cursor: pointer;
+  color: #ddd;
+  transition: all 0.2s;
+  user-select: none;
+}
 
-  .rating-section, .comment-section, .status-change {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
+.star:hover {
+  color: #ffd700;
+  transform: scale(1.2);
+}
 
-  .rating-stars {
-    display: flex;
-    gap: 0.3rem;
-    font-size: 1.5rem;
-  }
+.star.filled {
+  color: #ffd700;
+}
 
-  .star {
-    cursor: pointer;
-    color: #ddd;
-    transition: color 0.2s;
-  }
+.comment-section textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1.3px solid #3aafa97a;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  background: #f4f9fa;
+  box-sizing: border-box;
+}
 
-  .star:hover {
-    color: #ffd700;
-  }
+.comment-section textarea:focus {
+  outline: none;
+  border: 1.5px solid #5bc0be;
+}
 
-  .star.filled {
-    color: #ffd700;
-  }
+.status-change select {
+  padding: 0.6rem;
+  border: 1.3px solid #3aafa97a;
+  border-radius: 8px;
+  background: #f4f9fa;
+  font-size: 1rem;
+}
 
-  .comment-section textarea {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1.3px solid #3aafa97a;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 0.95rem;
-    resize: vertical;
-    background: #f4f9fa;
-  }
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
 
-  .comment-section textarea:focus {
-    outline: none;
-    border: 1.5px solid #5bc0be;
-  }
+.save-btn, .delete-btn {
+  flex: 1;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-  .status-change select {
-    padding: 0.6rem;
-    border: 1.3px solid #3aafa97a;
-    border-radius: 8px;
-    background: #f4f9fa;
-    font-size: 1rem;
-  }
+.save-btn {
+  background: #5bc0be;
+  color: white;
+}
 
-  .action-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
+.save-btn:hover {
+  background: #3aafa9;
+  transform: translateY(-1px);
+}
 
-  .save-btn, .delete-btn {
-    flex: 1;
-    padding: 0.7rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+}
 
-  .save-btn {
-    background: #5bc0be;
-    color: white;
-  }
-
-  .save-btn:hover {
-    background: #3aafa9;
-  }
-
-  .delete-btn {
-    background: #e74c3c;
-    color: white;
-  }
-
-  .delete-btn:hover {
-    background: #c0392b;
-  }
-
-  
+.delete-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+}
