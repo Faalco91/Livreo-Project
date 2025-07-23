@@ -50,20 +50,40 @@ function fetchBooks() {
     });
 }
 
+// Filtres globaux
+let currentSearch = '';
+let currentAuthor = '';
+let currentRating = '';
+let currentStatus = '';
+let currentMinPages = '';
+let currentMaxPages = '';
+
+function applyFilters(books) {
+  return books.filter(book => {
+    const searchMatch =
+      !currentSearch ||
+      book.title.toLowerCase().includes(currentSearch) ||
+      book.author.toLowerCase().includes(currentSearch);
+    const authorMatch = !currentAuthor || book.author === currentAuthor;
+    const ratingMatch = !currentRating || (book.rating || 0) >= parseInt(currentRating);
+    const statusMatch = !currentStatus || book.status === currentStatus;
+    const minPagesMatch = !currentMinPages || (book.pages || 0) >= parseInt(currentMinPages);
+    const maxPagesMatch = !currentMaxPages || (book.pages || 0) <= parseInt(currentMaxPages);
+    return searchMatch && authorMatch && ratingMatch && statusMatch && minPagesMatch && maxPagesMatch;
+  });
+}
+
 function renderBooks() {
   ["to-read", "reading", "read"].forEach(status => {
     const list = document.getElementById(status);
     if (!list) return;
     list.innerHTML = "";
-    
     let columnBooks = books.filter(book => book.status === status);
-    
-    // Appliquer le tri automatique
+    columnBooks = applyFilters(columnBooks);
     const sortType = getColumnAutoSort(status);
     if (sortType !== 'none') {
       columnBooks = sortBooks(columnBooks, sortType);
     }
-    
     columnBooks.forEach(book => {
       const div = document.createElement("div");
       div.className = "book-card";
@@ -512,3 +532,86 @@ function showColumn(status) {
     }
   }, 100);
 }
+
+// Initialisation des filtres et recherche
+function updateAuthorFilterOptions() {
+  const select = document.getElementById('authorFilter');
+  if (!select) return;
+  // Récupérer tous les auteurs uniques
+  const authors = Array.from(new Set(books.map(b => b.author))).sort();
+  select.innerHTML = '<option value="">Tous les auteurs</option>' +
+    authors.map(a => `<option value="${a}">${a}</option>`).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', e => {
+      currentSearch = e.target.value.trim().toLowerCase();
+      renderBooks();
+    });
+  }
+  // Dropdown filtres
+  const filterBtn = document.getElementById('filterBtn');
+  const filterDropdown = document.getElementById('filterDropdown');
+  if (filterBtn && filterDropdown) {
+    filterBtn.addEventListener('click', () => {
+      filterDropdown.classList.toggle('show');
+      filterBtn.classList.toggle('active');
+      if (filterDropdown.classList.contains('show')) {
+        updateAuthorFilterOptions();
+      }
+    });
+    // Fermer la dropdown si clic en dehors
+    document.addEventListener('click', (e) => {
+      if (!filterDropdown.contains(e.target) && !filterBtn.contains(e.target)) {
+        filterDropdown.classList.remove('show');
+        filterBtn.classList.remove('active');
+      }
+    });
+  }
+  // Filtres avancés
+  const authorFilter = document.getElementById('authorFilter');
+  if (authorFilter) {
+    authorFilter.addEventListener('change', e => {
+      currentAuthor = e.target.value;
+      renderBooks();
+    });
+  }
+  const ratingFilter = document.getElementById('ratingFilter');
+  if (ratingFilter) {
+    ratingFilter.addEventListener('change', e => {
+      currentRating = e.target.value;
+      renderBooks();
+    });
+  }
+  const statusFilter = document.getElementById('statusFilter');
+  if (statusFilter) {
+    statusFilter.addEventListener('change', e => {
+      currentStatus = e.target.value;
+      renderBooks();
+    });
+  }
+  const minPagesFilter = document.getElementById('minPagesFilter');
+  if (minPagesFilter) {
+    minPagesFilter.addEventListener('input', e => {
+      currentMinPages = e.target.value;
+      renderBooks();
+    });
+  }
+  const maxPagesFilter = document.getElementById('maxPagesFilter');
+  if (maxPagesFilter) {
+    maxPagesFilter.addEventListener('input', e => {
+      currentMaxPages = e.target.value;
+      renderBooks();
+    });
+  }
+  updateAuthorFilterOptions();
+});
+
+// Mettre à jour les options d'auteurs après chargement des livres
+const oldFetchBooks = fetchBooks;
+fetchBooks = function() {
+  oldFetchBooks.apply(this, arguments);
+  setTimeout(updateAuthorFilterOptions, 500);
+};
