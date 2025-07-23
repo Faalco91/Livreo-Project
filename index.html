@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Livreo - Ma bibliothèque en ligne</title>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <header>
+    <h1>Ma Bibliothèque</h1>
+    <div>
+      <button id="addBookBtn">Ajouter un livre</button>
+      <button id="showHiddenColumnsBtn">👁️ Afficher colonnes masquées</button>
+    </div>
+  </header>
+  <div class="search-bar-container">
+    <input type="text" id="searchInput" class="search-bar" placeholder="Rechercher un livre, un auteur...">
+    <span class="search-icon"></span>
+    <button id="filterBtn" class="filter-btn" type="button">Filtres <span class="filter-icon"></span></button>
+    <div id="filterDropdown" class="filter-dropdown">
+      <label>Auteur
+        <select id="authorFilter">
+          <option value="">Tous les auteurs</option>
+        </select>
+      </label>
+      <label>Note
+        <select id="ratingFilter">
+          <option value="">Toutes les notes</option>
+          <option value="5">★★★★★</option>
+          <option value="4">★★★★ et +</option>
+          <option value="3">★★★ et +</option>
+          <option value="2">★★ et +</option>
+          <option value="1">★ et +</option>
+        </select>
+      </label>
+      <label>Statut
+        <select id="statusFilter">
+          <option value="">Tous statuts</option>
+          <option value="to-read">À lire</option>
+          <option value="reading">En cours</option>
+          <option value="read">Lu</option>
+        </select>
+      </label>
+      <label>Pages min
+        <input type="number" id="minPagesFilter" placeholder="Pages min" min="0">
+      </label>
+      <label>Pages max
+        <input type="number" id="maxPagesFilter" placeholder="Pages max" min="0">
+      </label>
+    </div>
+  </div>
+  <div id="feedback-message" class="feedback-message hidden"></div>
+  <main>
+    <div id="columns" class="columns-container">
+      <div class="column">
+        <div class="column-header">
+          <h2>À lire</h2>
+          <button class="customize-column-btn" onclick="openColumnCustomizeModal('to-read')">⚙️</button>
+        </div>
+        <div class="books-list" id="to-read"></div>
+      </div>
+      <div class="column">
+        <div class="column-header">
+          <h2>En cours</h2>
+          <button class="customize-column-btn" onclick="openColumnCustomizeModal('reading')">⚙️</button>
+        </div>
+        <div class="books-list" id="reading"></div>
+      </div>
+      <div class="column">
+        <div class="column-header">
+          <h2>Lu</h2>
+          <button class="customize-column-btn" onclick="openColumnCustomizeModal('read')">⚙️</button>
+        </div>
+        <div class="books-list" id="read"></div>
+      </div>
+    </div>
+  </main>
+  <div id="modal" class="modal hidden"></div>
+</body>
+<script src="app.js"></script>
+
+</html>
